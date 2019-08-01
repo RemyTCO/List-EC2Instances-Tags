@@ -1,0 +1,20 @@
+import boto3
+   
+ec2 = boto3.client('ec2', 'eu-central-1')     
+
+def lambda_handler(event, context):           
+    all_instance_ids = []
+
+    reservations = ec2.describe_instances().get('Reservations', [])
+    for reservation in reservations:
+        for instance in reservation['Instances']:
+            tags = {}
+            if 'Tags' not in instance:
+                print(instance['InstanceId'] + " does not have any tag")
+                continue
+            for tag in instance['Tags']:
+                tags[tag['Key']] = tag['Value']
+                if(tag['Key'] == "Name"):
+                    print(tag['Value'])
+            print(tags)
+    
