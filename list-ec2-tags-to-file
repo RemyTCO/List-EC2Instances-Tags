@@ -1,0 +1,26 @@
+import boto3
+   
+ec2 = boto3.client('ec2', 'eu-central-1')     
+
+def lambda_handler(event, context):
+    string = "\n EC2 Details \n"
+
+    reservations = ec2.describe_instances().get('Reservations', [])
+    for reservation in reservations:
+        for instance in reservation['Instances']:
+            string += "\n\n" + instance['InstanceId'] + "- "
+            if 'Tags' not in instance:
+                string += "does not have any tag.\n"
+                continue
+            for tag in instance['Tags']:
+                string += "\n\t" + tag['Key'] + " ; " + tag['Value']
+            
+    encoded_string = string.encode("utf-8")
+    bucket_name = "bucket-to-store"
+    file_name = "ec2-details.txt"
+    lambda_path = "/tmp/" + file_name
+    s3_path = file_name
+
+    s3 = boto3.resource("s3")
+    s3.Bucket(bucket_name).put_object(Key=s3_path, Body=encoded_string)
+    
