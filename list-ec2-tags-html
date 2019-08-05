@@ -1,0 +1,57 @@
+import boto3
+   
+ec2 = boto3.client('ec2', 'eu-central-1')     
+
+def lambda_handler(event, context):
+    string = "\n EC2 Details \n"
+    html = """<html><head><style>
+table {
+  font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
+  border-collapse: collapse;
+  width: 100%;
+  border-collapse: separate;
+  empty-cells: hide;
+  border: 0;
+}
+tr {
+    border: 0;
+}
+td, th {
+  border: 1px solid #ddd;
+  padding: 8px;
+}
+
+tr:hover {background-color: #ddd;}
+
+th {
+  padding-top: 12px;
+  padding-bottom: 12px;
+  text-align: left;
+  background-color: #4CAF50;
+  color: white;
+}
+</style></head><table border="1"><tr><th>Instance ID</th><th>Tag Key</th><th>Tag Value</th></tr>"""
+
+    reservations = ec2.describe_instances().get('Reservations', [])
+    for reservation in reservations:
+        for instance in reservation['Instances']:
+            html += "<tr><td colspan=\"3\">{}".format(instance['InstanceId'])
+            string += "\n\n" + instance['InstanceId'] + "- "
+            if 'Tags' not in instance:
+                html += " {}</td></tr>".format("does not have any tag.")
+                string += "does not have any tag.\n"
+                continue
+            for tag in instance['Tags']:
+                html += "</td></tr><tr><td></td><td>{}</td>".format(tag['Key'])
+                html += "<td>{}</td></tr>".format(tag['Value'])
+                string += "\n\t" + tag['Key'] + " ; " + tag['Value']
+    html += "</table></html>"        
+    print(html)
+    encoded_string = html.encode("utf-8")
+    bucket_name = "a-snb-waf-backend"
+    file_name = "ec2-details.html"
+    lambda_path = "/tmp/" + file_name
+    s3_path = file_name
+
+    s3 = boto3.resource("s3")
+    s3.Bucket(bucket_name).put_object(Key=s3_path, Body=encoded_string)
