@@ -10,7 +10,7 @@ def lambda_handler(event, context):
         for instance in reservation['Instances']:
             string += "\n\n" + instance['InstanceId'] + "- "
             if 'Tags' not in instance:
-                string += "does not have any tag.\n"
+                string += "does not have any tag(s).\n"
                 continue
             for tag in instance['Tags']:
                 string += "\n\t" + tag['Key'] + " ; " + tag['Value']
