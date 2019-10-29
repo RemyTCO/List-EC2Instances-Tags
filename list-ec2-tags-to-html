@@ -30,7 +30,7 @@ th {
   background-color: #4CAF50;
   color: white;
 }
-</style></head><table border="1"><tr><th>Instance ID</th><th>Tag Key</th><th>Tag Value</th></tr>"""
+</style></head><table border="1"><tr><th>INSTANCE ID</th><th>Tag Key</th><th>Tag Value</th></tr>"""
 
     reservations = ec2.describe_instances().get('Reservations', [])
     for reservation in reservations:
